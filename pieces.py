@@ -3,6 +3,58 @@ import enum
 BOARD_SIZE = 8
 
 
+# def move_rules_rook():
+#     coor_deltas = []
+#     for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
+#         new_position_horizontal = (0, change)
+#         new_position_vertical = (change, 0)
+#         if new_position_horizontal != (0, 0) and coor_deltas.count(new_position_horizontal) == 0:
+#             coor_deltas.append(new_position_horizontal)
+#         if new_position_vertical != (0, 0) and coor_deltas.count(new_position_vertical) == 0:
+#             coor_deltas.append(new_position_vertical)
+#     return coor_deltas
+
+
+def move_rules_rook():
+    coor_deltas = [[], [], [], []]
+    for delta in range(1, BOARD_SIZE):
+        delta_up = (delta, 0)
+        delta_down = (-delta, 0)
+        delta_left = (0, -delta)
+        delta_right = (0, delta)
+        coor_deltas[0].append(delta_left)
+        coor_deltas[1].append(delta_up)
+        coor_deltas[2].append(delta_right)
+        coor_deltas[3].append(delta_down)
+    return coor_deltas
+
+
+# def move_rules_bishop():
+#     coor_deltas = []
+#     for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
+#         new_position_diagonal = (change, change)
+#         new_position_diagonal_reverse = (change, -change)
+#         if new_position_diagonal != (0, 0) and coor_deltas.count(new_position_diagonal) == 0:
+#             coor_deltas.append(new_position_diagonal)
+#         if new_position_diagonal_reverse != (0, 0) and coor_deltas.count(new_position_diagonal_reverse) == 0:
+#             coor_deltas.append(new_position_diagonal_reverse)
+#     return coor_deltas
+
+
+def move_rules_bishop():
+    coor_deltas = [[], [], [], []]
+    for delta in range(1, BOARD_SIZE):
+        delta_up_right = (delta, delta)
+        delta_down_right = (-delta, delta)
+        delta_up_left = (delta, -delta)
+        delta_down_left = (-delta, -delta)
+        coor_deltas[0].append(delta_up_right)
+        coor_deltas[1].append(delta_down_right)
+        coor_deltas[2].append(delta_up_left)
+        coor_deltas[3].append(delta_down_left)
+    return coor_deltas
+
+
 class Colours(enum.Enum):
     WHITE = "white"
     BLACK = "black"
@@ -32,6 +84,7 @@ class King:
         return chr(WhitePieceNotations.KING.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_KING.value)
 
+    @property
     def move_rules(self):
         """The king can move one square in any direction. 8 possible moves generally."""
         coor_deltas = []  # a list of the differences between the original square and the new squares
@@ -51,21 +104,11 @@ class Queen:
         return chr(WhitePieceNotations.QUEEN.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_QUEEN.value)
 
+    @property
     def move_rules(self):
-        coor_deltas = []
-        for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
-            new_position_horizontal = (0, change)
-            new_position_vertical = (change, 0)
-            new_position_diagonal = (change, change)
-            new_position_diagonal_reverse = (change, -change)
-            if new_position_horizontal != (0, 0) and coor_deltas.count(new_position_horizontal) == 0:
-                coor_deltas.append(new_position_horizontal)
-            if new_position_vertical != (0, 0) and coor_deltas.count(new_position_vertical) == 0:
-                coor_deltas.append(new_position_vertical)
-            if new_position_diagonal != (0, 0) and coor_deltas.count(new_position_diagonal) == 0:
-                coor_deltas.append(new_position_diagonal)
-            if new_position_diagonal_reverse != (0, 0) and coor_deltas.count(new_position_diagonal_reverse) == 0:
-                coor_deltas.append(new_position_diagonal_reverse)
+        """The queen can move both as a rook and as a bishop"""
+        coor_deltas = move_rules_rook()
+        coor_deltas.extend(move_rules_bishop())
         return coor_deltas
 
 
@@ -77,16 +120,9 @@ class Rook:
         return chr(WhitePieceNotations.ROOK.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_ROOK.value)
 
+    @property
     def move_rules(self):
-        coor_deltas = []
-        for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
-            new_position_horizontal = (0, change)
-            new_position_vertical = (change, 0)
-            if new_position_horizontal != (0, 0) and coor_deltas.count(new_position_horizontal) == 0:
-                coor_deltas.append(new_position_horizontal)
-            if new_position_vertical != (0, 0) and coor_deltas.count(new_position_vertical) == 0:
-                coor_deltas.append(new_position_vertical)
-        return coor_deltas
+        return move_rules_rook()
 
 
 class Bishop:
@@ -97,19 +133,14 @@ class Bishop:
         return chr(WhitePieceNotations.BISHOP.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_BISHOP.value)
 
+    @property
     def move_rules(self):
-        coor_deltas = []
-        for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
-            new_position_diagonal = (change, change)
-            new_position_diagonal_reverse = (change, -change)
-            if new_position_diagonal != (0, 0) and coor_deltas.count(new_position_diagonal) == 0:
-                coor_deltas.append(new_position_diagonal)
-            if new_position_diagonal_reverse != (0, 0) and coor_deltas.count(new_position_diagonal_reverse) == 0:
-                coor_deltas.append(new_position_diagonal_reverse)
-        return coor_deltas
+        return move_rules_bishop()
 
 
 class Knight:
+    move_rules = [[(-1, 2)], [(-2, 1)], [(1, 2)], [(2, 1)], [(1, -2)], [(2, -1)], [(-1, -2)], [(-2, -1)]]
+
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
 
@@ -117,19 +148,15 @@ class Knight:
         return chr(WhitePieceNotations.KNIGHT.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_KNIGHT.value)
 
-    def move_rules(self):
-        delta_one = 1
-        delta_two = 2
-
-
 
 class Pawn:
+    forward_move_rule = [(1, 0)]
+    double_move_rule = [(2,0)]
+    take_rules = [[(1, -1)], [(1, 1)]]
+
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
 
     def __str__(self):
         return chr(WhitePieceNotations.PAWN.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_PAWN.value)
-
-    def move_rules(self):
-        return [(1, 0), (2, 0), (1, 1), (1, -1)]
