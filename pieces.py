@@ -51,7 +51,7 @@ class WhitePieceNotations(enum.Enum):
     BLACK_KNIGHT = 9822
     BLACK_PAWN = 9823
 
- #TODO rework the properties of the pieces to match the Queen
+
 class King:
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
@@ -106,27 +106,21 @@ class Queen:
 class Rook:
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
+        self.move_rules = move_rules_rook()
 
     def __str__(self):
         return chr(WhitePieceNotations.ROOK.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_ROOK.value)
 
-    @property
-    def move_rules(self):
-        return move_rules_rook()
-
 
 class Bishop:
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
+        self.move_rules = move_rules_bishop()
 
     def __str__(self):
         return chr(WhitePieceNotations.BISHOP.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_BISHOP.value)
-
-    @property
-    def move_rules(self):
-        return move_rules_bishop()
 
 
 class Knight:

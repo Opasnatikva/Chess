@@ -138,7 +138,7 @@ if __name__ == "__main__":
     # board_instance.board[4]["E"] = pieces.Rook("white")
     board_instance.board[5]["E"] = pieces.Rook("black")
     board_instance.board[5]["C"] = pieces.Rook("white")
-    board_instance.board[3]["D"] = pieces.Knight("white")
+    board_instance.board[3]["D"] = pieces.Rook("white")
 
     board_instance()
     a = board_instance.collision_check((3, "D"))
