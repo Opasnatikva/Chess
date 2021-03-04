@@ -3,18 +3,6 @@ import enum
 BOARD_SIZE = 8
 
 
-# def move_rules_rook():
-#     coor_deltas = []
-#     for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
-#         new_position_horizontal = (0, change)
-#         new_position_vertical = (change, 0)
-#         if new_position_horizontal != (0, 0) and coor_deltas.count(new_position_horizontal) == 0:
-#             coor_deltas.append(new_position_horizontal)
-#         if new_position_vertical != (0, 0) and coor_deltas.count(new_position_vertical) == 0:
-#             coor_deltas.append(new_position_vertical)
-#     return coor_deltas
-
-
 def move_rules_rook():
     coor_deltas = [[], [], [], []]
     for delta in range(1, BOARD_SIZE):
@@ -27,18 +15,6 @@ def move_rules_rook():
         coor_deltas[2].append(delta_right)
         coor_deltas[3].append(delta_down)
     return coor_deltas
-
-
-# def move_rules_bishop():
-#     coor_deltas = []
-#     for change in range(-BOARD_SIZE + 1, BOARD_SIZE):
-#         new_position_diagonal = (change, change)
-#         new_position_diagonal_reverse = (change, -change)
-#         if new_position_diagonal != (0, 0) and coor_deltas.count(new_position_diagonal) == 0:
-#             coor_deltas.append(new_position_diagonal)
-#         if new_position_diagonal_reverse != (0, 0) and coor_deltas.count(new_position_diagonal_reverse) == 0:
-#             coor_deltas.append(new_position_diagonal_reverse)
-#     return coor_deltas
 
 
 def move_rules_bishop():
@@ -75,7 +51,7 @@ class WhitePieceNotations(enum.Enum):
     BLACK_KNIGHT = 9822
     BLACK_PAWN = 9823
 
-
+ #TODO rework the properties of the pieces to match the Queen
 class King:
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
@@ -99,17 +75,32 @@ class King:
 class Queen:
     def __init__(self, colour=Colours.WHITE.value):
         self.colour = colour
+        coor_deltas = move_rules_rook()
+        coor_deltas.extend(move_rules_bishop())
+        self.move_rules = coor_deltas
 
     def __str__(self):
         return chr(WhitePieceNotations.QUEEN.value) if self.colour == Colours.WHITE.value else chr(
             WhitePieceNotations.BLACK_QUEEN.value)
 
-    @property
-    def move_rules(self):
-        """The queen can move both as a rook and as a bishop"""
-        coor_deltas = move_rules_rook()
-        coor_deltas.extend(move_rules_bishop())
-        return coor_deltas
+
+# class Queen:
+#     moves_buffer = None
+#     def __init__(self, colour=Colours.WHITE.value):
+#         self.colour = colour
+#
+#     def __str__(self):
+#         return chr(WhitePieceNotations.QUEEN.value) if self.colour == Colours.WHITE.value else chr(
+#             WhitePieceNotations.BLACK_QUEEN.value)
+#
+#     @property
+#     def move_rules(self):
+#         """The queen can move both as a rook and as a bishop"""
+#         if self.moves_buffer is None:
+#             coor_deltas = move_rules_rook()
+#             coor_deltas.extend(move_rules_bishop())
+#             self.moves_buffer = coor_deltas
+#         return self.moves_buffer
 
 
 class Rook:

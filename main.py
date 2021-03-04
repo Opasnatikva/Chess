@@ -56,7 +56,7 @@ class ChessBoard:
         moves_downwards = -(max_moves_in_direction - moves_upwards)
         moves_to_the_right = max_moves_in_direction - string.ascii_uppercase.index(coordinates[1])
         moves_to_the_left = -(max_moves_in_direction - moves_to_the_right)
-        return {"0, -1": moves_to_the_left, "0, 1": moves_to_the_right, "-1, 0": moves_downwards, "1, 0": moves_upwards}
+        return {"left": moves_to_the_left, "right": moves_to_the_right, "down": moves_downwards, "up": moves_upwards}
 
     def possible_moves_for_board_position(self, coordinates):
         """For a piece on the board, get the rules for moving it,
@@ -67,69 +67,79 @@ class ChessBoard:
         for vector in move_rules:
             subset_vector = []
             for element in vector:
-                if max_moves_in_directions["-1, 0"] <= element[0] <= max_moves_in_directions["1, 0"] and \
-                        max_moves_in_directions["0, -1"] <= element[1] <= max_moves_in_directions["0, 1"]:
+                if max_moves_in_directions["down"] <= element[0] <= max_moves_in_directions["up"] and \
+                        max_moves_in_directions["left"] <= element[1] <= max_moves_in_directions["right"]:
                     subset_vector.append(element)
             possible_moves_subset.append(subset_vector)
         return possible_moves_subset
 
     def add_delta_to_coors(self, coordinates, delta):
         new_coors_y = coordinates[0] + delta[0]
-        new_coors_x = string.ascii_uppercase[string.ascii_uppercase.index(coordinates[1]) + delta[1]]
-        new_coors = (new_coors_y, new_coors_x)
-        return new_coors
+        new_coors_x = self.modify_horizontal_coor(coordinates[1], delta[1])
+        return new_coors_y, new_coors_x
 
     def collision_check_general(self, coordinates):
         possible_moves_subset = self.possible_moves_for_board_position(coordinates)
         legal_moves = []
         for vector in possible_moves_subset:
-            moves_in_vector = []
             for step in vector:
                 square_to_check = self.add_delta_to_coors(coordinates, step)
                 if board_instance.board[square_to_check[0]][square_to_check[1]] == self.EMPTY_SPACE:
-                    moves_in_vector.append(square_to_check)
+                    legal_moves.append(square_to_check)
                     continue
                 if board_instance.board[square_to_check[0]][square_to_check[1]].colour == \
                         board_instance.board[coordinates[0]][coordinates[1]].colour:
                     break
                 else:
-                    moves_in_vector.append(square_to_check)
+                    legal_moves.append(square_to_check)
                     break
-            legal_moves.append(moves_in_vector)
         return legal_moves
+
+    def modify_horizontal_coor(self, coordinate, delta):
+        return string.ascii_uppercase[string.ascii_uppercase.index(coordinate) + delta]
 
     def collision_check_pawn(self, coordinates):
         possible_moves = []
-        y_delta = 1 if self.board[coordinates[0]][coordinates[1]].colour == pieces.Colours.WHITE else -1
+        y_delta = 1 if self.board[coordinates[0]][coordinates[1]].colour == pieces.Colours.WHITE.value else -1
         square_in_front = ((coordinates[0] + y_delta), coordinates[1])
         if self.board[square_in_front[0]][square_in_front[1]] == self.EMPTY_SPACE:  # space ahead is free
-            possible_moves.append(pieces.Pawn.forward_move_rule)
-        left_diagonal = ((coordinates[0] + y_delta), string.ascii_uppercase[string.ascii_uppercase.index(coordinates[1]) - 1])
-        right_diagonal = ((coordinates[0] + y_delta), string.ascii_uppercase[string.ascii_uppercase.index(coordinates[1]) + 1])
-        if left_diagonal != self.EMPTY_SPACE and self.board[left_diagonal[0]][left_diagonal[1]].colour != \
-            self.board[coordinates[0]][coordinates[1]].colour:
-            possible_moves.append(pieces.Pawn.take_rules[0])
-        if right_diagonal != self.EMPTY_SPACE and self.board[right_diagonal[0]][right_diagonal[1]].colour != \
+            possible_moves.append(square_in_front)
+        left_diagonal = (
+            (coordinates[0] + y_delta), self.modify_horizontal_coor(coordinates[1], -1))
+        right_diagonal = (
+            (coordinates[0] + y_delta), self.modify_horizontal_coor(coordinates[1], +1))
+        if coordinates[1] != "A" and self.board[left_diagonal[0]][left_diagonal[1]] != self.EMPTY_SPACE and \
+                self.board[left_diagonal[0]][left_diagonal[1]].colour != \
                 self.board[coordinates[0]][coordinates[1]].colour:
-            possible_moves.append(pieces.Pawn.take_rules[1])
-        starting_row = 1 if self.board[coordinates[0]][coordinates[1]].colour == pieces.Colours.WHITE else 6
-        if coordinates[0] == starting_row:
-            possible_moves.append(pieces.Pawn.double_move_rule)
+            possible_moves.append(left_diagonal)
+        if coordinates[1] != "H" and self.board[right_diagonal[0]][right_diagonal[1]] != self.EMPTY_SPACE and \
+                self.board[right_diagonal[0]][right_diagonal[1]].colour != \
+                self.board[coordinates[0]][coordinates[1]].colour:
+            possible_moves.append([right_diagonal])
+        starting_row = 1 if self.board[coordinates[0]][coordinates[1]].colour == pieces.Colours.WHITE.value else 6
+        double_move = ((coordinates[0] + (2 * y_delta)), coordinates[1])
+        # double_move = self.board[coordinates[0] + (2 * y_delta)][coordinates[1]]
+        if coordinates[0] == starting_row and self.board[square_in_front[0]][square_in_front[1]] == self.EMPTY_SPACE and self.board[double_move[0]][double_move[1]] == self.EMPTY_SPACE:
+            possible_moves.append(double_move)
         return possible_moves
-  #TODO Indexing in collision check needs fixing. When the pawn is on the "A" or "H" column, it returns an index error
+
     def collision_check(self, coordinates):
         if isinstance(self.board[coordinates[0]][coordinates[1]], pieces.Pawn):
-            possible_moves = self.collision_check_pawn(coordinates)
+            return self.collision_check_pawn(coordinates)
         else:
-            possible_moves = self.collision_check_general(coordinates)
-        return possible_moves
+            return self.collision_check_general(coordinates)
 
 
 if __name__ == "__main__":
     board_instance = ChessBoard()
-    board_instance.board[4]["D"] = pieces.Rook()
+    # board_instance.board[2]["B"] = pieces.Rook("black")
+    # board_instance.board[2]["A"] = pieces.Rook("black")
+    # board_instance.board[2]["C"] = pieces.Rook("black")
+    # board_instance.board[4]["E"] = pieces.Rook("white")
+    board_instance.board[5]["E"] = pieces.Rook("black")
+    board_instance.board[5]["C"] = pieces.Rook("white")
+    board_instance.board[3]["D"] = pieces.Knight("white")
+
     board_instance()
-    a = board_instance.collision_check((1, "A"))
-    for vector in a:
-        for coors in vector:
-            print(coors)
+    a = board_instance.collision_check((3, "D"))
+    print(a)
